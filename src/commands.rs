@@ -129,26 +129,30 @@ pub fn status() -> Result<(), String> {
     Ok(())
 }
 
-/// `update`: ask the feed whether a newer version exists.
+/// `update`: ask the GitHub API whether a newer version exists.
 pub fn update(args: UpdateArgs) -> Result<(), String> {
-    let latest = update::latest_version()
+    let current = env!("CARGO_PKG_VERSION");
+    let latest = update::latest_release()
         .ok_or_else(|| "could not check for updates (no network connection?)".to_string())?;
 
-    if latest <= core::VERSION {
+    if !latest.is_newer_than_current() {
         println!(
-            "No update was found! (installed: {}, latest: {latest})",
-            core::VERSION
+            "No update was found! (installed: {current}, latest: {})",
+            latest.tag
         );
         return Ok(());
     }
 
     println!(
-        "[+] Update found: version {latest} (installed: {})",
-        core::VERSION
+        "[+] Update found: version {} (installed: {current})",
+        latest.tag
     );
-    println!("    {}", core::URL_DOWNLOAD);
+    let url = latest
+        .url
+        .unwrap_or_else(|| format!("{}/latest", core::URL_DOWNLOAD));
+    println!("    {url}");
     if args.open {
-        sys::open(core::URL_DOWNLOAD)?;
+        sys::open(&url)?;
     }
     Ok(())
 }

@@ -1,5 +1,6 @@
-//! Update check (AutoIt's `GotUpdate`), implemented with WinHTTP so no TLS
-//! crate is needed: the request goes through Windows itself.
+//! Update check against this repository's own GitHub releases, implemented
+//! with WinHTTP so no TLS or JSON crate is needed: the request goes through
+//! Windows itself.
 
 use std::ptr;
 
@@ -9,28 +10,56 @@ use windows_sys::Win32::Networking::WinHttp::{
     WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, WINHTTP_ACCESS_TYPE_NO_PROXY, WINHTTP_FLAG_SECURE,
 };
 
-use crate::core::VERSION;
 use crate::sys::wide;
+use crate::version;
 
 /// WinHTTP's `HINTERNET`: an opaque pointer, not a `HANDLE`.
 type WinHttpHandle = *mut core::ffi::c_void;
 
-const HOST: &str = "pastebin.com";
-const PATH: &str = "/raw/uYr0cstV";
+/// `GET /repos/OWNER/REPO/releases/latest` of this repository.
+const HOST: &str = "api.github.com";
+const PATH: &str = "/repos/anhkhoakz/idm-let-me-try-more/releases/latest";
 const TIMEOUT_MS: i32 = 15_000;
 
-/// Latest version announced by the feed, or `None` when it cannot be read.
-pub fn latest_version() -> Option<i64> {
-    let body = http_get(true, HOST, PATH)?;
-    let start = body.find("<version>")? + "<version>".len();
-    let rest = &body[start..];
-    let end = rest.find("</version>")?;
-    rest[..end].trim().parse().ok()
+/// The newest published release, as reported by the GitHub API.
+pub struct LatestRelease {
+    /// The tag name, e.g. `v21.0.0`.
+    pub tag: String,
+    /// The release page to open in a browser, when the API sent one.
+    pub url: Option<String>,
 }
 
-/// `Some(true)` when a newer version than [`VERSION`] is available.
+impl LatestRelease {
+    /// `true` when this release is newer than the running executable.
+    pub fn is_newer_than_current(&self) -> bool {
+        version::is_newer(&self.tag, env!("CARGO_PKG_VERSION"))
+    }
+}
+
+/// The newest published release, or `None` when it cannot be read (no network,
+/// rate limited, no release published yet, ...).
+pub fn latest_release() -> Option<LatestRelease> {
+    let body = http_get(true, HOST, PATH, &headers())?;
+    // `tag_name` is what we compare; `html_url` only matters for `--open`.
+    let tag = version::tag_name(&body)?.to_string();
+    let url = version::html_url(&body).map(str::to_owned);
+    Some(LatestRelease { tag, url })
+}
+
+/// `Some(true)` when a newer version than the running one is available.
 pub fn update_available() -> Option<bool> {
-    latest_version().map(|latest| latest > VERSION)
+    latest_release().map(|release| release.is_newer_than_current())
+}
+
+/// The headers the GitHub API requires: it rejects requests without a
+/// `User-Agent`, and the other two keep the answer predictable.
+fn headers() -> String {
+    format!(
+        "User-Agent: idm-trial-reset/{}\r\n\
+         Accept: application/vnd.github+json\r\n\
+         X-GitHub-Api-Version: 2022-11-28\r\n",
+        env!("CARGO_PKG_VERSION")
+    )
 }
 
 /// RAII wrapper so every early return still closes its handle.
@@ -47,7 +76,7 @@ impl Drop for InternetHandle {
 }
 
 /// Plain HTTPS GET, following redirects, returning the body as text.
-fn http_get(secure: bool, host: &str, path: &str) -> Option<String> {
+fn http_get(secure: bool, host: &str, path: &str, headers: &str) -> Option<String> {
     unsafe {
         let agent = wide("idm-trial-reset");
         let mut session = WinHttpOpen(
@@ -101,7 +130,19 @@ fn http_get(secure: bool, host: &str, path: &str) -> Option<String> {
         }
         let request = InternetHandle(request);
 
-        let sent = WinHttpSendRequest(request.0, ptr::null(), 0, ptr::null(), 0, 0, 0);
+        // The header block is one wide string, its length excludes the
+        // terminating null that `wide` appends.
+        let wide_headers = wide(headers);
+        let headers_len = wide_headers.len().saturating_sub(1) as u32;
+        let sent = WinHttpSendRequest(
+            request.0,
+            wide_headers.as_ptr(),
+            headers_len,
+            ptr::null(),
+            0,
+            0,
+            0,
+        );
         if sent == 0 || WinHttpReceiveResponse(request.0, ptr::null_mut()) == 0 {
             return None;
         }

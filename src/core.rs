@@ -14,7 +14,6 @@ use crate::search;
 use crate::sys;
 
 /// Version compared against the update feed (AutoIt's `$version`).
-pub const VERSION: i64 = 21;
 pub const URL_FORUM: &str = "https://github.com/anhkhoakz/idm-let-me-try-more/discussions";
 pub const URL_DOWNLOAD: &str = "https://github.com/anhkhoakz/idm-let-me-try-more/releases";
 

@@ -24,12 +24,16 @@ mod date;
 // Same for the `reg query` output parser.
 #[cfg_attr(not(windows), allow(dead_code))]
 mod search;
+// Release tags come from this repository's own GitHub releases; parsing them
+// is platform independent too.
 #[cfg(windows)]
 mod singleton;
 #[cfg(windows)]
 mod sys;
 #[cfg(windows)]
 mod update;
+#[cfg_attr(not(windows), allow(dead_code))]
+mod version;
 
 use clap::Parser;
 
