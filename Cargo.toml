@@ -1,0 +1,31 @@
+[package]
+name = "idm-trial-reset"
+version = "21.0.0"
+edition = "2021"
+description = "Reset the IDM trial, fix blocked / fake serial errors, or register IDM (Windows CLI)"
+license = "MIT"
+repository = "https://github.com/J2TEAM/idm-trial-reset"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+
+# Everything below only exists on Windows: the tool edits the registry.
+[target.'cfg(windows)'.dependencies]
+winreg = "0.55"
+windows-sys = { version = "0.60", features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Gdi",
+    "Win32_Networking_WinHttp",
+    "Win32_Security",
+    "Win32_System_Registry",
+    "Win32_System_SystemInformation",
+    "Win32_System_Threading",
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging",
+] }
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

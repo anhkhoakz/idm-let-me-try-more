@@ -1,0 +1,4 @@
+# Link the C runtime statically so the released .exe has no dependency on the
+# Visual C++ redistributable (the AutoIt build had none either).
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]
