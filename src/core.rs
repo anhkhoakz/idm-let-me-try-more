@@ -15,8 +15,8 @@ use crate::sys;
 
 /// Version compared against the update feed (AutoIt's `$version`).
 pub const VERSION: i64 = 21;
-pub const URL_FORUM: &str = "https://github.com/J2TEAM/idm-trial-reset/discussions";
-pub const URL_DOWNLOAD: &str = "https://github.com/J2TEAM/idm-trial-reset/releases";
+pub const URL_FORUM: &str = "https://github.com/anhkhoakz/idm-let-me-try-more/discussions";
+pub const URL_DOWNLOAD: &str = "https://github.com/anhkhoakz/idm-let-me-try-more/releases";
 
 const DOWNLOAD_MANAGER: &str = r"Software\DownloadManager";
 const AUTO_RESET_VALUE: &str = "auto_reset_trial";

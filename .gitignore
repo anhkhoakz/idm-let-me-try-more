@@ -1,1 +1,12 @@
+# Build output
 /target
+
+# Tool caches
+.rumdl_cache/
+
+# Editor / OS noise
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

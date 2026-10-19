@@ -7,11 +7,11 @@ use std::fs;
 use std::io;
 use std::path::PathBuf;
 
-const RESET_REG: &[u8] = include_bytes!("../../src/idm_reset.reg");
-const TRIAL_REG: &[u8] = include_bytes!("../../src/idm_trial.reg");
-const REGISTER_REG: &[u8] = include_bytes!("../../src/idm_reg.reg");
-const SETACL_X86: &[u8] = include_bytes!("../../src/SetACLx32.exe");
-const SETACL_X64: &[u8] = include_bytes!("../../src/SetACLx64.exe");
+const RESET_REG: &[u8] = include_bytes!("../assets/idm_reset.reg");
+const TRIAL_REG: &[u8] = include_bytes!("../assets/idm_trial.reg");
+const REGISTER_REG: &[u8] = include_bytes!("../assets/idm_reg.reg");
+const SETACL_X86: &[u8] = include_bytes!("../assets/SetACLx32.exe");
+const SETACL_X64: &[u8] = include_bytes!("../assets/SetACLx64.exe");
 
 const REG_FILES: [(&str, &[u8]); 3] = [
     ("idm_reset.reg", RESET_REG),

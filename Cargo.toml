@@ -2,9 +2,13 @@
 name = "idm-trial-reset"
 version = "21.0.0"
 edition = "2021"
+authors = ["anhkhoakz <113995598+anhkhoakz@users.noreply.github.com>"]
 description = "Reset the IDM trial, fix blocked / fake serial errors, or register IDM (Windows CLI)"
 license = "MIT"
-repository = "https://github.com/J2TEAM/idm-trial-reset"
+repository = "https://github.com/anhkhoakz/idm-let-me-try-more"
+readme = "README.md"
+keywords = ["idm", "trial", "reset", "windows", "cli"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }
